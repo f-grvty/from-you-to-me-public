@@ -1,0 +1,1 @@
+(()=>{const s=new URLSearchParams(location.search).get('preview-status');if(['available','reserved','sold'].includes(s))document.body.dataset.status=s;})();
