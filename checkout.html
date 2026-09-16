@@ -11,9 +11,9 @@
 .page{max-width:760px;margin:0 auto;min-height:100vh;padding:22px 16px 70px}
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:30px}.brand{font:31px/1 Georgia,serif;color:var(--green);text-decoration:none}.back{font-size:14px;color:var(--green);text-decoration:none}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:26px;padding:22px;box-shadow:0 14px 40px rgba(52,45,36,.06)}.kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#918a7e}h1{font:38px/1.02 Georgia,serif;font-weight:400;margin:10px 0 8px}.bookline{font:20px/1.25 Georgia,serif;color:#4d4d45}.price{font:48px/1 Georgia,serif;color:var(--green);margin:15px 0 5px}.status{display:inline-flex;margin:8px 0 18px;border-radius:999px;padding:7px 11px;background:var(--green);color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em}.status.reserved{background:var(--amber)}.status.sold{background:#85837c}
-.step{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}.step h2{font:25px/1.1 Georgia,serif;font-weight:400;margin:0 0 12px}label.field{display:block;margin:12px 0}label.field span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}input[type=text],input[type=tel]{width:100%;font:16px inherit;padding:14px 15px;border:1px solid var(--line);border-radius:15px;background:#fffdf8;color:var(--ink);outline:none}input:focus{border-color:var(--green)}
+.step{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}.step h2{font:25px/1.1 Georgia,serif;font-weight:400;margin:0 0 12px}label.field{display:block;margin:12px 0}label.field span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}input[type=text],input[type=tel],input[type=email]{width:100%;font:16px inherit;padding:14px 15px;border:1px solid var(--line);border-radius:15px;background:#fffdf8;color:var(--ink);outline:none}input:focus{border-color:var(--green)}
 .choice{display:flex;gap:11px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:17px;margin:9px 0;background:#fffdf8;cursor:pointer}.choice input{margin-top:3px}.choice b{display:block;font-size:16px}.choice small{display:block;color:var(--muted);line-height:1.35;margin-top:3px}.disabled{opacity:.55;cursor:default}
-.btn{width:100%;display:flex;align-items:center;justify-content:center;border:1px solid var(--green);border-radius:999px;padding:15px 17px;font-size:17px;min-height:54px;background:transparent;color:var(--green);text-decoration:none;cursor:pointer}.btn.primary{background:var(--green);color:#fff}.btn.amber{background:var(--amber);border-color:var(--amber);color:#fff}.btn:disabled{opacity:.55;cursor:wait}.notice{border-radius:18px;padding:15px 16px;margin:14px 0;line-height:1.45;background:#f1eee7;border:1px solid var(--line)}.error{background:#f5e6e2;border-color:#dfc1b9;color:#773b31}.success{background:#e7efe9;border-color:#c5d6c9}
+.btn{width:100%;display:flex;align-items:center;justify-content:center;border:1px solid var(--green);border-radius:999px;padding:15px 17px;font-size:17px;min-height:54px;background:transparent;color:var(--green);text-decoration:none;cursor:pointer}.btn.primary{background:var(--green);color:#fff}.btn.amber{background:var(--amber);border-color:var(--amber);color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}.notice{border-radius:18px;padding:15px 16px;margin:14px 0;line-height:1.45;background:#f1eee7;border:1px solid var(--line)}.error{background:#f5e6e2;border-color:#dfc1b9;color:#773b31}.success{background:#e7efe9;border-color:#c5d6c9}
 .payment{margin-top:18px}.payment h2{font:29px/1.08 Georgia,serif;font-weight:400}.amount{font:42px/1 Georgia,serif;color:var(--green);margin:10px 0}.qr{max-width:330px;width:100%;display:block;margin:18px auto;border-radius:18px;background:white;padding:15px}.hint{font-size:13px;color:var(--muted);line-height:1.5}.timer{font-weight:700;color:var(--amber)}.hidden{display:none!important}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 @media(max-width:540px){h1{font-size:32px}.row{grid-template-columns:1fr}}
 </style>
@@ -30,11 +30,13 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 <div class="status" id="status">AVAILABLE</div>
 <div id="unavailable" class="notice hidden"></div>
 
-<form id="reserveForm">
+<form id="reserveForm" novalidate>
 <div class="step">
 <h2>Как с тобой связаться</h2>
-<label class="field"><span>Имя</span><input id="buyerName" name="buyer_name" type="text" autocomplete="name" required maxlength="120"></label>
-<label class="field"><span>Телефон / WhatsApp / Telegram</span><input id="buyerContact" name="buyer_contact" type="text" autocomplete="tel" required maxlength="180" placeholder="+357… или @username"></label>
+<label class="field"><span>Имя *</span><input id="buyerName" name="buyer_name" type="text" autocomplete="name" required minlength="2" maxlength="80" placeholder="Имя"></label>
+<label class="field"><span>Телефон / WhatsApp *</span><input id="buyerPhone" name="buyer_phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="24" placeholder="+357 99 123456"></label>
+<label class="field"><span>Email <small style="font-size:11px">(необязательно)</small></span><input id="buyerEmail" name="buyer_email" type="email" autocomplete="email" maxlength="120" placeholder="name@example.com"></label>
+<div class="hint">Для резерва нужен рабочий номер, по которому можно связаться. Email можно оставить дополнительно. Эти данные используются только для связи по заказу.</div>
 </div>
 
 <div class="step">
@@ -50,7 +52,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 <label class="choice"><input type="radio" name="payment_method" value="CASH"><span><b>Наличными при самовывозе</b><small>экземпляр будет зарезервирован на 24 часа</small></span></label>
 </div>
 <div id="formError" class="notice error hidden"></div>
-<button class="btn primary" id="reserveBtn" type="submit">Зарезервировать</button>
+<button class="btn primary" id="reserveBtn" type="submit" disabled>Зарезервировать</button>
 <div class="hint" style="margin-top:10px">При Revolut/QuickPay резерв держится 30 минут. Наличными — 24 часа.</div>
 </form>
 
@@ -123,14 +125,48 @@ async function init(){
   if(book.status!=='AVAILABLE') showUnavailable(book.status);
  }catch(e){$('loading').innerHTML='<div class="notice error">Не удалось проверить экземпляр. Попробуй обновить страницу.</div>'}
 }
+function validName(v){
+ const t=String(v||'').trim();
+ const letters=(t.match(/\p{L}/gu)||[]).length;
+ return t.length>=2 && letters>=2;
+}
+function normalisePhone(v){return String(v||'').trim().replace(/[\s().-]/g,'')}
+function validPhone(v){return /^\+?\d{8,15}$/.test(normalisePhone(v))}
+function validEmail(v){
+ const t=String(v||'').trim();
+ return !t || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t);
+}
+function contactValidationMessage(){
+ const name=$('buyerName').value;
+ const phone=$('buyerPhone').value;
+ const email=$('buyerEmail').value;
+ if(!validName(name)) return 'Введи имя — минимум две буквы.';
+ if(!validPhone(phone)) return 'Введи рабочий номер телефона / WhatsApp: 8–15 цифр, можно с + и пробелами.';
+ if(!validEmail(email)) return 'Проверь формат email или оставь это поле пустым.';
+ return '';
+}
+function updateReserveButton(){
+ $('reserveBtn').disabled=!!contactValidationMessage();
+}
+['buyerName','buyerPhone','buyerEmail'].forEach(id=>$(id).addEventListener('input',updateReserveButton));
+
 $('reserveForm').addEventListener('submit',async e=>{
  e.preventDefault();$('formError').classList.add('hidden');
+ const validationError=contactValidationMessage();
+ if(validationError){
+  const el=$('formError');el.textContent=validationError;el.classList.remove('hidden');
+  updateReserveButton();
+  return;
+ }
  const btn=$('reserveBtn');btn.disabled=true;btn.textContent='Создаю резерв…';
  try{
   const fd=new FormData(e.currentTarget);
+  const phone=String(fd.get('buyer_phone')||'').trim();
+  const email=String(fd.get('buyer_email')||'').trim();
+  const buyerContact='Телефон/WhatsApp: '+phone+(email?' · Email: '+email:'');
   const data=await apiPost({
    action:'reserve',book_id:bookId,
-   buyer_name:fd.get('buyer_name'),buyer_contact:fd.get('buyer_contact'),
+   buyer_name:String(fd.get('buyer_name')||'').trim(),buyer_contact:buyerContact,
    fulfilment:fd.get('fulfilment'),payment_method:fd.get('payment_method')
   });
   if(!data.ok){
@@ -141,7 +177,7 @@ $('reserveForm').addEventListener('submit',async e=>{
   showPayment(fd.get('payment_method'));startTimer(data.expiresAt);
  }catch(err){
   const el=$('formError');el.textContent='Не получилось создать резерв. '+(err.message==='TRY_AGAIN'?'Попробуй ещё раз через несколько секунд.':'Обнови страницу и попробуй снова.');el.classList.remove('hidden');
- }finally{btn.disabled=false;btn.textContent='Зарезервировать'}
+ }finally{btn.textContent='Зарезервировать';updateReserveButton()}
 });
 function showPayment(method){
  const amount='€'+book.price;
