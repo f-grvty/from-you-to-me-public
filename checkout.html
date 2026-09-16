@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4efe6">
+<title>Забрать книгу · От тебя мне</title>
+<style>
+:root{--cream:#f4efe6;--paper:#fbf8f1;--ink:#26271f;--muted:#706b63;--green:#2e5d4a;--line:#dcd5ca;--sage:#dfe7dd;--amber:#b98538}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.page{max-width:760px;margin:0 auto;min-height:100vh;padding:22px 16px 70px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:30px}.brand{font:31px/1 Georgia,serif;color:var(--green);text-decoration:none}.back{font-size:14px;color:var(--green);text-decoration:none}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:26px;padding:22px;box-shadow:0 14px 40px rgba(52,45,36,.06)}.kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#918a7e}h1{font:38px/1.02 Georgia,serif;font-weight:400;margin:10px 0 8px}.bookline{font:20px/1.25 Georgia,serif;color:#4d4d45}.price{font:48px/1 Georgia,serif;color:var(--green);margin:15px 0 5px}.status{display:inline-flex;margin:8px 0 18px;border-radius:999px;padding:7px 11px;background:var(--green);color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em}.status.reserved{background:var(--amber)}.status.sold{background:#85837c}
+.step{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}.step h2{font:25px/1.1 Georgia,serif;font-weight:400;margin:0 0 12px}label.field{display:block;margin:12px 0}label.field span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}input[type=text],input[type=tel]{width:100%;font:16px inherit;padding:14px 15px;border:1px solid var(--line);border-radius:15px;background:#fffdf8;color:var(--ink);outline:none}input:focus{border-color:var(--green)}
+.choice{display:flex;gap:11px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:17px;margin:9px 0;background:#fffdf8;cursor:pointer}.choice input{margin-top:3px}.choice b{display:block;font-size:16px}.choice small{display:block;color:var(--muted);line-height:1.35;margin-top:3px}.disabled{opacity:.55;cursor:default}
+.btn{width:100%;display:flex;align-items:center;justify-content:center;border:1px solid var(--green);border-radius:999px;padding:15px 17px;font-size:17px;min-height:54px;background:transparent;color:var(--green);text-decoration:none;cursor:pointer}.btn.primary{background:var(--green);color:#fff}.btn.amber{background:var(--amber);border-color:var(--amber);color:#fff}.btn:disabled{opacity:.55;cursor:wait}.notice{border-radius:18px;padding:15px 16px;margin:14px 0;line-height:1.45;background:#f1eee7;border:1px solid var(--line)}.error{background:#f5e6e2;border-color:#dfc1b9;color:#773b31}.success{background:#e7efe9;border-color:#c5d6c9}
+.payment{margin-top:18px}.payment h2{font:29px/1.08 Georgia,serif;font-weight:400}.amount{font:42px/1 Georgia,serif;color:var(--green);margin:10px 0}.qr{max-width:330px;width:100%;display:block;margin:18px auto;border-radius:18px;background:white;padding:15px}.hint{font-size:13px;color:var(--muted);line-height:1.5}.timer{font-weight:700;color:var(--amber)}.hidden{display:none!important}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media(max-width:540px){h1{font-size:32px}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+<header><a class="brand" href="./">От тебя мне</a><a class="back" id="backLink" href="./">← к книге</a></header>
+<div class="card">
+<div id="loading">Проверяю экземпляр…</div>
+<div id="app" class="hidden">
+<div class="kicker" id="code"></div>
+<h1 id="title"></h1>
+<div class="price" id="price"></div>
+<div class="status" id="status">AVAILABLE</div>
+<div id="unavailable" class="notice hidden"></div>
+
+<form id="reserveForm">
+<div class="step">
+<h2>Как с тобой связаться</h2>
+<label class="field"><span>Имя</span><input id="buyerName" name="buyer_name" type="text" autocomplete="name" required maxlength="120"></label>
+<label class="field"><span>Телефон / WhatsApp / Telegram</span><input id="buyerContact" name="buyer_contact" type="text" autocomplete="tel" required maxlength="180" placeholder="+357… или @username"></label>
+</div>
+
+<div class="step">
+<h2>Получение</h2>
+<label class="choice"><input type="radio" name="fulfilment" value="PICKUP_LIMASSOL" checked><span><b>Самовывоз в Лимассоле</b><small>бесплатно · место и время договоримся после резерва</small></span></label>
+<div class="choice disabled"><span><b>Доставка по Кипру</b><small>подключим следующим этапом, когда зафиксируем способ и стоимость</small></span></div>
+</div>
+
+<div class="step">
+<h2>Оплата</h2>
+<label class="choice"><input type="radio" name="payment_method" value="REVOLUT" checked><span><b>Revolut</b><small>оплата по Revolut.me после создания резерва</small></span></label>
+<label class="choice"><input type="radio" name="payment_method" value="BOC_QUICKPAY"><span><b>Bank of Cyprus QuickPay</b><small>QR-код или открытие QuickPay на телефоне</small></span></label>
+<label class="choice"><input type="radio" name="payment_method" value="CASH"><span><b>Наличными при самовывозе</b><small>экземпляр будет зарезервирован на 24 часа</small></span></label>
+</div>
+<div id="formError" class="notice error hidden"></div>
+<button class="btn primary" id="reserveBtn" type="submit">Зарезервировать</button>
+<div class="hint" style="margin-top:10px">При Revolut/QuickPay резерв держится 30 минут. Наличными — 24 часа.</div>
+</form>
+
+<div id="reservedView" class="payment hidden">
+<div class="notice success"><b>Книга зарезервирована за тобой.</b><br><span id="expiryText"></span></div>
+<div id="payRevolut" class="hidden">
+<h2>Оплати через Revolut</h2><div class="amount" id="revAmount"></div>
+<p class="hint">Открой Revolut по кнопке ниже и введи именно эту сумму.</p>
+<a class="btn primary" href="https://revolut.me/ekateryyk4" target="_blank" rel="noopener">Открыть Revolut</a>
+</div>
+<div id="payBoc" class="hidden">
+<h2>Оплати через BoC QuickPay</h2><div class="amount" id="bocAmount"></div>
+<p class="hint">На телефоне попробуй кнопку «Открыть QuickPay». На компьютере или втором устройстве отсканируй QR из приложения BoC.</p>
+<a class="btn primary" href="bocscheme://quickPay?quickPayToken=aqsmdgxagkap">Открыть QuickPay</a>
+<img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZoAAAGaAQAAAAAefbjOAAAC5klEQVR4nO2cTW7bMBBG31QCvKSAHKBHkW7QIxW9mXQU30BcGpDwdcEfyemmaVIrsYYLgab54CFCDGc+jmLizW369nYGHHLIIYcccsih54QstxamDsy61Zi6OiuWCcMh5jn0QAhJEr0kaW5SLz/mRhDyF7t54ydfk0MfAcXqAKIZRDON4WYQW2wAkgc5yjyHjoPqWWFDbIGw/K9fcuhLQBppikQRJGA1jf/jlxz6nFA5CYKACPTzSxoRsUPEi/LHI8xz6ChoMjOzDmxIA41sSA+wgTWlGkeZ59CjfcTOAUzfFyDcLD9YTfce4tOvyaH3QzYAEFvo59X0yy4qMWYjJmuTGznIPIcOiCNiB4SbabImx5PTD0i9XqtBmB9vnkMPh7JClYWo+hHIuUaQNNJIY1jSt65QnQHq59VsKNqDxiBpjC3S1UpEEV2hOhGUI4WsTwKrZXEqSPbz2ubecIx5Dj3+XmNulDyDZtjdZoxAOk7G4PcaZ4BKaBAW9jddM6RejSPo5XHEGaAUG1h/vcj6MeUaCwSRUs1+JPeILyXk/ORrcug90M5H3HmGpRwT6Uo8RxTuI54f2mWf+VyY4W6D5N52pviOeGoo+wjNjYDsDyTVPJQcWW6lNL4jnhq6zzWW3QYpbdmrVr4jTgOFBRviRWbWYkOVpHLZJZRyiWPMc+hhUK2z3GLH0qvyxG7MI8vTQPGSZOvsDwD6JGBLZl0jjdHvPk8HhZvlXCNauubIxZal2XCkeQ49Atpnn5Cl7BRoqiQXeaafGqeASnJRWtkCd+W3fUlHPNd4fuiuIIKmKhOw1UxswqX7iNNAvcpfn3CzpFmSAs2qYnt9xKmg+k7X1IEN8VIyUsgllr0W0pSvsiaHPghqVBKOlk3HpL658RXX5NBft/aPkdguBphS0e3Vamn+6nrECaDX74aXQLPea8zlKnQb88jymaHXuUaRIkp9xDbPa7HPAZn/ZzKHHHLIIYcccugfod8/XXPuo9HhpwAAAABJRU5ErkJggg==" alt="Bank of Cyprus QuickPay QR">
+</div>
+<div id="payCash" class="hidden">
+<h2>Оплата наличными</h2>
+<p>Книга зарезервирована для самовывоза. Мы свяжемся с тобой, чтобы договориться о месте и времени.</p>
+<p class="hint">После передачи книги продавец отметит экземпляр как SOLD.</p>
+</div>
+<div id="digitalConfirm" class="hidden">
+<div class="step"><p>Уже отправил(а) перевод?</p><button class="btn amber" id="paidBtn" type="button">Я оплатил(а)</button><div id="paidResult" class="notice hidden"></div></div>
+</div>
+<div class="row"><a class="btn" id="returnBook" href="./">Вернуться к книге</a><a class="btn" href="./">Посмотреть каталог</a></div>
+</div>
+</div>
+</div>
+</div>
+<script>
+const API='https://script.google.com/macros/s/AKfycbwyXTdeFwq_zzkaC5PbqQ_K-_10pNp_l4-optHxiZ7bNcKQeuUnyko_SKdx3KRV80Co/exec';
+const params=new URLSearchParams(location.search);
+const bookId=(params.get('book')||'').replace(/\D/g,'').padStart(3,'0').slice(-3);
+const $=id=>document.getElementById(id);
+let book=null,reservation=null,countdown=null;
+function bookUrl(){return bookId?`./books/${bookId}/`:'./'}
+$('backLink').href=bookUrl();$('returnBook').href=bookUrl();
+
+async function apiGet(action,extra={}){
+ const q=new URLSearchParams({action,...extra});
+ const r=await fetch(API+'?'+q.toString(),{redirect:'follow',cache:'no-store'});
+ return await r.json();
+}
+async function apiPost(data){
+ const body=new URLSearchParams(data);
+ const r=await fetch(API,{method:'POST',redirect:'follow',body});
+ return await r.json();
+}
+function setStatus(s){
+ const el=$('status');el.textContent=s;el.className='status '+(s||'').toLowerCase();
+}
+function showUnavailable(s){
+ $('reserveForm').classList.add('hidden');
+ const el=$('unavailable');el.classList.remove('hidden');
+ if(s==='RESERVED') el.innerHTML='<b>Эта книга сейчас в резерве.</b><br>Если резерв снимется, она снова станет доступна.';
+ else if(s==='SOLD') el.innerHTML='<b>Эта книга уже нашла нового читателя.</b><br>Можно вернуться к странице книги или посмотреть другие истории.';
+ else el.textContent='Экземпляр сейчас недоступен.';
+}
+async function init(){
+ if(!bookId){$('loading').textContent='Не указана книга.';return}
+ try{
+  const x=await apiGet('book',{book_id:bookId});
+  if(!x.ok) throw new Error(x.error||'BOOK_NOT_FOUND');
+  book=x.book;
+  $('code').textContent='BOOK '+book.id+' · ONE COPY';
+  $('title').textContent=book.title;
+  $('price').textContent='€'+book.price;
+  setStatus(book.status);
+  $('loading').classList.add('hidden');$('app').classList.remove('hidden');
+  if(book.status!=='AVAILABLE') showUnavailable(book.status);
+ }catch(e){$('loading').innerHTML='<div class="notice error">Не удалось проверить экземпляр. Попробуй обновить страницу.</div>'}
+}
+$('reserveForm').addEventListener('submit',async e=>{
+ e.preventDefault();$('formError').classList.add('hidden');
+ const btn=$('reserveBtn');btn.disabled=true;btn.textContent='Создаю резерв…';
+ try{
+  const fd=new FormData(e.currentTarget);
+  const data=await apiPost({
+   action:'reserve',book_id:bookId,
+   buyer_name:fd.get('buyer_name'),buyer_contact:fd.get('buyer_contact'),
+   fulfilment:fd.get('fulfilment'),payment_method:fd.get('payment_method')
+  });
+  if(!data.ok){
+   if(data.error==='RESERVED'||data.error==='SOLD'){setStatus(data.status||data.error);showUnavailable(data.status||data.error);return}
+   throw new Error(data.error||'RESERVATION_FAILED');
+  }
+  reservation=data;setStatus('RESERVED');$('reserveForm').classList.add('hidden');$('reservedView').classList.remove('hidden');
+  showPayment(fd.get('payment_method'));startTimer(data.expiresAt);
+ }catch(err){
+  const el=$('formError');el.textContent='Не получилось создать резерв. '+(err.message==='TRY_AGAIN'?'Попробуй ещё раз через несколько секунд.':'Обнови страницу и попробуй снова.');el.classList.remove('hidden');
+ }finally{btn.disabled=false;btn.textContent='Зарезервировать'}
+});
+function showPayment(method){
+ const amount='€'+book.price;
+ ['payRevolut','payBoc','payCash','digitalConfirm'].forEach(id=>$(id).classList.add('hidden'));
+ if(method==='REVOLUT'){$('payRevolut').classList.remove('hidden');$('revAmount').textContent=amount;$('digitalConfirm').classList.remove('hidden')}
+ if(method==='BOC_QUICKPAY'){$('payBoc').classList.remove('hidden');$('bocAmount').textContent=amount;$('digitalConfirm').classList.remove('hidden')}
+ if(method==='CASH') $('payCash').classList.remove('hidden');
+}
+function startTimer(iso){
+ const end=new Date(iso).getTime();
+ const tick=()=>{const ms=end-Date.now();if(ms<=0){$('expiryText').textContent='Срок резерва истёк. Обнови страницу, чтобы проверить доступность.';clearInterval(countdown);return}
+ const m=Math.floor(ms/60000),s=Math.floor((ms%60000)/1000);$('expiryText').innerHTML='Резерв до <span class="timer">'+m+':'+String(s).padStart(2,'0')+'</span>.';
+ };
+ tick();countdown=setInterval(tick,1000);
+}
+$('paidBtn').addEventListener('click',async()=>{
+ if(!reservation)return;const btn=$('paidBtn');btn.disabled=true;btn.textContent='Отправляю…';
+ try{
+  const x=await apiPost({action:'claimPaid',reservation_id:reservation.reservationId,buyer_token:reservation.buyerToken});
+  const el=$('paidResult');el.classList.remove('hidden');
+  if(x.ok){el.className='notice success';el.innerHTML='<b>Спасибо.</b><br>Проверим поступление и подтвердим продажу.';btn.classList.add('hidden')}
+  else throw new Error(x.error||'ERROR');
+ }catch(e){const el=$('paidResult');el.className='notice error';el.textContent='Не удалось отправить подтверждение. Попробуй ещё раз.';el.classList.remove('hidden')}
+ finally{btn.disabled=false;btn.textContent='Я оплатил(а)'}
+});
+init();
+</script>
+</body></html>
