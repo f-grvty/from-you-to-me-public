@@ -50,7 +50,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
   <input id="boxnowLockerAddress" type="hidden" name="boxnow_locker_address" value="">
   <input id="boxnowLockerPostcode" type="hidden" name="boxnow_locker_postcode" value="">
   <input id="boxnowLockerName" type="hidden" name="boxnow_locker_name" value="">
-  <button class="btn boxnow-widget-button" id="boxnowPicker" type="button">Выбрать BOX NOW locker</button>
+  <button class="btn boxnow-map-widget-button" id="boxnowPicker" type="button">Выбрать BOX NOW locker</button>
   <div id="boxnowSelected" class="hint" style="margin-top:10px">Locker ещё не выбран.</div>
   <div id="boxnowmap"></div>
 </div>
@@ -104,7 +104,9 @@ const BOXNOW_SMALL_FEE=2;
 window._bn_map_widget_config={
  type:'popup',
  parentElement:'#boxnowmap',
+ buttonSelector:'#boxnowPicker',
  gps:true,
+ autoselect:false,
  autoclose:true,
  afterSelect:function(selected){
   const id=String(selected&&selected.boxnowLockerId||'');
@@ -120,7 +122,7 @@ window._bn_map_widget_config={
   updateReserveButton();
  }
 };
-(function(d){const e=d.createElement('script');e.src='https://widget-cdn.boxnow.cy/map-widget/client/v1.js';e.async=true;e.defer=true;d.head.appendChild(e)})(document);
+(function(d){const e=d.createElement('script');e.src='https://widget-cdn.boxnow.cy/map-widget/client/v5.js';e.async=true;e.defer=true;d.head.appendChild(e)})(document);
 function bookUrl(){return bookId?`./books/${bookId}/`:'./'}
 $('backLink').href=bookUrl();$('returnBook').href=bookUrl();
 
