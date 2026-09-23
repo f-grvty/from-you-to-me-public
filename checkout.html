@@ -30,7 +30,9 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 <div class="status" id="status">AVAILABLE</div>
 <div id="unavailable" class="notice hidden"></div>
 
-<form id="reserveForm" novalidate>
+<form id="reserveForm" method="post" action="https://script.google.com/macros/s/AKfycbwyXTdeFwq_zzkaC5PbqQ_K-_10pNp_l4-optHxiZ7bNcKQeuUnyko_SKdx3KRV80Co/exec" novalidate>
+<input type="hidden" name="action" value="reservehtml">
+<input id="bookIdField" type="hidden" name="book_id" value="">
 <div class="step">
 <h2>Как с тобой связаться</h2>
 <label class="field"><span>Имя *</span><input id="buyerName" name="buyer_name" type="text" autocomplete="name" required minlength="2" maxlength="80" placeholder="Имя"></label>
@@ -150,40 +152,17 @@ function updateReserveButton(){
 }
 ['buyerName','buyerPhone','buyerEmail'].forEach(id=>$(id).addEventListener('input',updateReserveButton));
 
-$('reserveForm').addEventListener('submit',async e=>{
- e.preventDefault();$('formError').classList.add('hidden');
+$('reserveForm').addEventListener('submit',e=>{
+ $('formError').classList.add('hidden');
  const validationError=contactValidationMessage();
  if(validationError){
+  e.preventDefault();
   const el=$('formError');el.textContent=validationError;el.classList.remove('hidden');
   updateReserveButton();
   return;
  }
+ $('bookIdField').value=bookId;
  const btn=$('reserveBtn');btn.disabled=true;btn.textContent='Создаю резерв…';
- try{
-  const fd=new FormData(e.currentTarget);
-  const phone=String(fd.get('buyer_phone')||'').trim();
-  const email=String(fd.get('buyer_email')||'').trim();
-  const buyerContact='Телефон/WhatsApp: '+phone+(email?' · Email: '+email:'');
-  const data=await apiPost({
-   action:'reserve',book_id:bookId,
-   buyer_name:String(fd.get('buyer_name')||'').trim(),
-   buyer_phone:phone,buyer_email:email,buyer_contact:buyerContact,
-   fulfilment:fd.get('fulfilment'),payment_method:fd.get('payment_method')
-  });
-  if(!data.ok){
-   if(data.error==='RESERVED'||data.error==='SOLD'){setStatus(data.status||data.error);showUnavailable(data.status||data.error);return}
-   if(data.error==='INVALID_NAME') throw new Error('INVALID_NAME');
-   if(data.error==='INVALID_PHONE') throw new Error('INVALID_PHONE');
-   if(data.error==='INVALID_EMAIL') throw new Error('INVALID_EMAIL');
-   throw new Error(data.error||'RESERVATION_FAILED');
-  }
-  reservation=data;setStatus('RESERVED');$('reserveForm').classList.add('hidden');$('reservedView').classList.remove('hidden');
-  showPayment(fd.get('payment_method'));startTimer(data.expiresAt);
- }catch(err){
-  const el=$('formError');
-  const messages={INVALID_NAME:'Введи имя — минимум две буквы.',INVALID_PHONE:'Введи рабочий номер телефона / WhatsApp: 8–15 цифр.',INVALID_EMAIL:'Проверь формат email.',TRY_AGAIN:'Попробуй ещё раз через несколько секунд.'};
-  el.textContent=messages[err.message]||'Не получилось создать резерв. Обнови страницу и попробуй снова.';el.classList.remove('hidden');
- }finally{btn.textContent='Зарезервировать';updateReserveButton()}
 });
 function showPayment(method){
  const amount='€'+book.price;
