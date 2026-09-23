@@ -93,10 +93,25 @@ let book=null,reservation=null,countdown=null;
 function bookUrl(){return bookId?`./books/${bookId}/`:'./'}
 $('backLink').href=bookUrl();$('returnBook').href=bookUrl();
 
-async function apiGet(action,extra={}){
- const q=new URLSearchParams({action,...extra});
- const r=await fetch(API+'?'+q.toString(),{redirect:'follow',cache:'no-store'});
- return await r.json();
+function loadInventory(){
+ return new Promise((resolve,reject)=>{
+  const cb='__otmCheckout'+Date.now()+Math.random().toString(36).slice(2);
+  let done=false;
+  const s=document.createElement('script');
+  const finish=(err,data)=>{
+   if(done)return;
+   done=true;
+   clearTimeout(timer);
+   try{delete window[cb]}catch(_){}
+   s.remove();
+   err?reject(err):resolve(data);
+  };
+  window[cb]=data=>finish(null,data);
+  s.onerror=()=>finish(new Error('inventory'));
+  s.src=API+'?action=inventoryjs&callback='+encodeURIComponent(cb)+'&_='+Date.now();
+  document.head.appendChild(s);
+  const timer=setTimeout(()=>finish(new Error('timeout')),10000);
+ });
 }
 async function apiPost(data){
  const body=new URLSearchParams(data);
@@ -116,9 +131,10 @@ function showUnavailable(s){
 async function init(){
  if(!bookId){$('loading').textContent='Не указана книга.';return}
  try{
-  const x=await apiGet('book',{book_id:bookId});
-  if(!x.ok) throw new Error(x.error||'BOOK_NOT_FOUND');
-  book=x.book;
+  const x=await loadInventory();
+  if(!x||!x.ok) throw new Error((x&&x.error)||'INVENTORY_FAILED');
+  book=(x.books||[]).find(b=>String(b.id)===bookId);
+  if(!book) throw new Error('BOOK_NOT_FOUND');
   $('code').textContent='BOOK '+book.id+' · ONE COPY';
   $('title').textContent=book.title;
   $('price').textContent='€'+book.price;
