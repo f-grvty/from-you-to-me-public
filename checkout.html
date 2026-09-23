@@ -44,15 +44,25 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 <div class="step">
 <h2>Получение</h2>
 <label class="choice"><input type="radio" name="fulfilment" value="PICKUP_LIMASSOL" checked><span><b>Самовывоз в Лимассоле</b><small>бесплатно · место и время договоримся после резерва</small></span></label>
-<div class="choice disabled"><span><b>Доставка по Кипру</b><small>подключим следующим этапом, когда зафиксируем способ и стоимость</small></span></div>
+<label class="choice"><input type="radio" name="fulfilment" value="DELIVERY_CYPRUS"><span><b>BOX NOW locker по Кипру · €2</b><small>Small · до 8 × 45 × 60 см · выбери удобный locker на карте</small></span></label>
+<div id="boxnowDelivery" class="notice hidden">
+  <input id="boxnowLockerId" type="hidden" name="boxnow_locker_id" value="">
+  <input id="boxnowLockerAddress" type="hidden" name="boxnow_locker_address" value="">
+  <input id="boxnowLockerPostcode" type="hidden" name="boxnow_locker_postcode" value="">
+  <input id="boxnowLockerName" type="hidden" name="boxnow_locker_name" value="">
+  <button class="btn boxnow-map-widget-button" id="boxnowPicker" type="button">Выбрать BOX NOW locker</button>
+  <div id="boxnowSelected" class="hint" style="margin-top:10px">Locker ещё не выбран.</div>
+  <div id="boxnowmap"></div>
+</div>
 </div>
 
 <div class="step">
 <h2>Оплата</h2>
 <label class="choice"><input type="radio" name="payment_method" value="REVOLUT" checked><span><b>Revolut</b><small>оплата по Revolut.me после создания резерва</small></span></label>
 <label class="choice"><input type="radio" name="payment_method" value="BOC_QUICKPAY"><span><b>Bank of Cyprus QuickPay</b><small>QR-код или открытие QuickPay на телефоне</small></span></label>
-<label class="choice"><input type="radio" name="payment_method" value="CASH"><span><b>Наличными при самовывозе</b><small>экземпляр будет зарезервирован на 24 часа</small></span></label>
+<label class="choice" id="cashChoice"><input type="radio" name="payment_method" value="CASH"><span><b>Наличными при самовывозе</b><small>экземпляр будет зарезервирован на 24 часа</small></span></label>
 </div>
+<div id="orderTotal" class="notice"><b>Итого: €<span id="totalAmount">0</span></b><br><span class="hint" id="totalBreakdown"></span></div>
 <div id="formError" class="notice error hidden"></div>
 <button class="btn primary" id="reserveBtn" type="submit" disabled>Зарезервировать</button>
 <div class="hint" style="margin-top:10px">При Revolut/QuickPay резерв держится 30 минут. Наличными — 24 часа.</div>
@@ -90,6 +100,27 @@ const params=new URLSearchParams(location.search);
 const bookId=(params.get('book')||'').replace(/\D/g,'').padStart(3,'0').slice(-3);
 const $=id=>document.getElementById(id);
 let book=null,reservation=null,countdown=null;
+const BOXNOW_SMALL_FEE=2;
+window._bn_map_widget_config={
+ type:'popup',
+ parentElement:'#boxnowmap',
+ gps:'yes',
+ autoclose:'yes',
+ afterSelect:function(selected){
+  const id=String(selected&&selected.boxnowLockerId||'');
+  const address=String(selected&&selected.boxnowLockerAddressLine1||'');
+  const postcode=String(selected&&selected.boxnowLockerPostalCode||'');
+  const name=String(selected&&(selected.boxnowLockerName||selected.boxnowLockerTitle||selected.boxnowLockerAddressLine2)||'');
+  $('boxnowLockerId').value=id;
+  $('boxnowLockerAddress').value=address;
+  $('boxnowLockerPostcode').value=postcode;
+  $('boxnowLockerName').value=name;
+  const parts=[name,address,postcode].filter(Boolean);
+  $('boxnowSelected').innerHTML=id?'<b>Выбран locker:</b><br>'+parts.map(escapeHtml).join(' · '):'Locker ещё не выбран.';
+  updateReserveButton();
+ }
+};
+(function(d){const e=d.createElement('script');e.src='https://widget-cdn.boxnow.cy/map-widget/client/v5.js';e.async=true;e.defer=true;d.head.appendChild(e)})(document);
 function bookUrl(){return bookId?`./books/${bookId}/`:'./'}
 $('backLink').href=bookUrl();$('returnBook').href=bookUrl();
 
@@ -138,6 +169,7 @@ async function init(){
   $('code').textContent='BOOK '+book.id+' · ONE COPY';
   $('title').textContent=book.title;
   $('price').textContent='€'+book.price;
+  updateTotal();
   setStatus(book.status);
   $('loading').classList.add('hidden');$('app').classList.remove('hidden');
   if(book.status!=='AVAILABLE') showUnavailable(book.status);
@@ -163,14 +195,41 @@ function contactValidationMessage(){
  if(!validEmail(email)) return 'Проверь формат email или оставь это поле пустым.';
  return '';
 }
+function selectedFulfilment(){return document.querySelector('input[name="fulfilment"]:checked')?.value||'PICKUP_LIMASSOL'}
+function selectedPayment(){return document.querySelector('input[name="payment_method"]:checked')?.value||'REVOLUT'}
+function escapeHtml(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function deliveryValidationMessage(){
+ if(selectedFulfilment()==='DELIVERY_CYPRUS'&&!$('boxnowLockerId').value) return 'Выбери BOX NOW locker для получения.';
+ if(selectedFulfilment()==='DELIVERY_CYPRUS'&&selectedPayment()==='CASH') return 'Для BOX NOW выбери Revolut или Bank of Cyprus QuickPay.';
+ return '';
+}
+function updateTotal(){
+ if(!book)return;
+ const shipping=selectedFulfilment()==='DELIVERY_CYPRUS'?BOXNOW_SMALL_FEE:0;
+ const total=Number(book.price||0)+shipping;
+ $('totalAmount').textContent=total.toFixed(2).replace(/\.00$/,'');
+ $('totalBreakdown').textContent=shipping?'Книга €'+book.price+' + BOX NOW Small €'+shipping:'Книга €'+book.price+' · самовывоз бесплатно';
+}
+function updateFulfilmentUi(){
+ const delivery=selectedFulfilment()==='DELIVERY_CYPRUS';
+ $('boxnowDelivery').classList.toggle('hidden',!delivery);
+ $('cashChoice').classList.toggle('disabled',delivery);
+ const cash=$('cashChoice').querySelector('input');
+ cash.disabled=delivery;
+ if(delivery&&cash.checked) document.querySelector('input[name="payment_method"][value="REVOLUT"]').checked=true;
+ updateTotal();
+ updateReserveButton();
+}
 function updateReserveButton(){
- $('reserveBtn').disabled=!!contactValidationMessage();
+ $('reserveBtn').disabled=!!(contactValidationMessage()||deliveryValidationMessage());
 }
 ['buyerName','buyerPhone','buyerEmail'].forEach(id=>$(id).addEventListener('input',updateReserveButton));
+document.querySelectorAll('input[name="fulfilment"]').forEach(el=>el.addEventListener('change',updateFulfilmentUi));
+document.querySelectorAll('input[name="payment_method"]').forEach(el=>el.addEventListener('change',updateReserveButton));
 
 $('reserveForm').addEventListener('submit',e=>{
  $('formError').classList.add('hidden');
- const validationError=contactValidationMessage();
+ const validationError=contactValidationMessage()||deliveryValidationMessage();
  if(validationError){
   e.preventDefault();
   const el=$('formError');el.textContent=validationError;el.classList.remove('hidden');
