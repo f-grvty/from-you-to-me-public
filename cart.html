@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4efe6">
+<title>Корзина · От тебя мне</title>
+<link rel="stylesheet" href="assets/styles.css?v=7">
+<style>
+.cart-main{max-width:760px;margin:0 auto}.cart-head{margin:8px 0 22px}.cart-head h1{margin-bottom:8px}.cart-head p{font:18px/1.45 Georgia,"Times New Roman",serif;color:#5f5d56;margin:0}.cart-list{display:grid;gap:12px}.cart-item{display:grid;grid-template-columns:110px 1fr;gap:16px;background:rgba(255,253,248,.82);border:1px solid var(--line);border-radius:22px;padding:12px}.cart-item.unavailable{opacity:.68}.cart-thumb{display:block}.cart-thumb img{width:110px;height:135px;object-fit:cover;border-radius:15px;display:block}.cart-item-main{min-width:0;display:flex;flex-direction:column}.cart-code{font-size:10px;letter-spacing:.14em;color:#918a7e;margin:2px 0 7px}.cart-title{font:23px/1.08 Georgia,"Times New Roman",serif}.cart-item-bottom{display:flex;justify-content:space-between;align-items:end;margin-top:auto;padding-top:12px}.cart-item-bottom strong{font:28px/1 Georgia,"Times New Roman",serif;color:var(--green)}.cart-item-bottom button{border:0;background:none;color:#8a6e62;text-decoration:underline;font-size:13px;cursor:pointer}.cart-unavailable{margin-top:9px;color:#8a4d40;font-size:13px}.cart-empty{background:rgba(255,253,248,.75);border:1px solid var(--line);border-radius:24px;padding:26px;text-align:center}.cart-empty h2{font:30px/1 Georgia,serif;font-weight:400;margin:0 0 10px}.cart-summary{margin-top:18px;background:rgba(255,253,248,.82);border:1px solid var(--line);border-radius:24px;padding:20px}.summary-row{display:flex;justify-content:space-between;gap:20px;padding:7px 0}.summary-row.total{border-top:1px solid var(--line);margin-top:10px;padding-top:16px;font-size:20px}.delivery-preview{margin:16px 0}.delivery-preview .option small{padding-left:0}.cart-note{font-size:13px;line-height:1.45;color:var(--muted);margin-top:10px}.cart-summary .btn:disabled{opacity:.46;cursor:not-allowed}.continue{margin-top:12px}
+@media(max-width:520px){.cart-item{grid-template-columns:86px 1fr;gap:12px}.cart-thumb img{width:86px;height:112px}.cart-title{font-size:20px}}
+</style>
+<script src="assets/cart.js?v=1" defer></script>
+</head>
+<body data-root="./">
+<div class="page">
+<header>
+<a class="brand" href="./"><div class="mark"></div><div><div class="brand-name">От тебя мне</div><div class="brand-sub">Истории, которые ищут новых слушателей</div></div></a>
+<div class="header-side"><div class="header-note">детские книги на русском<br>Лимассол, Кипр</div><a class="cart-link" href="cart.html">Корзина · <span data-cart-count>0</span></a></div>
+</header>
+<main class="cart-main" data-cart-page>
+<a class="back-link" href="./">← Назад в каталог</a>
+<div class="cart-head"><div class="eyebrow">ТВОИ КНИГИ</div><h1>Корзина</h1><p>Можно собрать несколько историй и оформить их одним заказом.</p></div>
+<div class="cart-empty" data-cart-empty hidden><h2>Здесь пока пусто</h2><p>Вернись в каталог и выбери книгу, которую хочется забрать.</p><a class="btn primary" href="./">Смотреть книги</a></div>
+<div class="cart-list" data-cart-items></div>
+<section class="cart-summary" data-cart-summary hidden>
+<div class="summary-row"><span>Книги</span><strong data-books-total>€0</strong></div>
+<div class="delivery-preview">
+<div class="kicker">Получение</div>
+<div class="option"><b>Самовывоз в Лимассоле</b><small>бесплатно</small></div>
+<div class="option"><b>BOX NOW locker по Кипру</b><small data-shipping-text>от €2</small></div>
+</div>
+<div class="summary-row total"><span>Итого за книги</span><strong data-books-total>€0</strong></div>
+<button class="btn primary" type="button" data-cart-checkout>Оформить заказ</button>
+<div class="cart-note" data-cart-checkout-note></div>
+<a class="btn secondary continue" href="./">Продолжить смотреть книги</a>
+</section>
+</main>
+</div>
+</body>
+</html>
