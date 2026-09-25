@@ -1,0 +1,29 @@
+(()=>{const KEY='otm_cart_v1',API='https://script.google.com/macros/s/AKfycbwyXTdeFwq_zzkaC5PbqQ_K-_10pNp_l4-optHxiZ7bNcKQeuUnyko_SKdx3KRV80Co/exec';
+const money=n=>Number(n||0).toFixed(2).replace(/\.00$/,'');
+function read(){try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[]}catch(_){return[]}}
+function write(items){localStorage.setItem(KEY,JSON.stringify(items));updateGlobalUi();window.dispatchEvent(new CustomEvent('otm:cart',{detail:{items}}))}
+function has(id){return read().some(x=>String(x.id)===String(id))}
+function add(item){const items=read();if(items.some(x=>String(x.id)===String(item.id)))return items;items.push(item);write(items);toast('Добавлено в корзину','Перейти в корзину');return items}
+function remove(id){const items=read().filter(x=>String(x.id)!==String(id));write(items);return items}
+function clear(){write([])}
+function cartUrl(){const root=document.body.dataset.root||'./';return new URL(root+'cart.html',location.href).href}
+function updateGlobalUi(){const items=read();document.querySelectorAll('[data-cart-count]').forEach(el=>el.textContent=String(items.length));document.querySelectorAll('[data-cart-add]').forEach(btn=>{const yes=items.some(x=>String(x.id)===String(btn.dataset.bookId));btn.classList.toggle('is-added',yes);btn.textContent=yes?'В корзине ✓':(btn.dataset.defaultLabel||'Добавить в корзину')})}
+function toast(title,action){let el=document.querySelector('.cart-toast');if(!el){el=document.createElement('div');el.className='cart-toast';document.body.appendChild(el)}el.innerHTML='<span><b>'+escapeHtml(title)+'</b></span><a href="'+cartUrl()+'">'+escapeHtml(action)+'</a>';el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3200)}
+function escapeHtml(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function bindAddButtons(){document.querySelectorAll('[data-cart-add]').forEach(btn=>{if(btn.dataset.cartBound)return;btn.dataset.cartBound='1';btn.dataset.defaultLabel=btn.textContent.trim();btn.addEventListener('click',e=>{e.preventDefault();const id=btn.dataset.bookId;if(!id||has(id)){toast('Эта книга уже в корзине','Открыть корзину');return}add({id,title:btn.dataset.title||'',price:Number(btn.dataset.price||0),url:new URL(btn.dataset.url||'./',location.href).href,image:new URL(btn.dataset.image||'',location.href).href})})})}
+function loadInventory(){return new Promise((resolve,reject)=>{const cb='__otmCart'+Date.now()+Math.random().toString(36).slice(2),s=document.createElement('script');let done=false;const finish=(err,data)=>{if(done)return;done=true;clearTimeout(timer);try{delete window[cb]}catch(_){}s.remove();err?reject(err):resolve(data)};window[cb]=data=>finish(null,data);s.onerror=()=>finish(new Error('inventory'));s.src=API+'?action=inventoryjs&callback='+encodeURIComponent(cb)+'&_='+Date.now();document.head.appendChild(s);const timer=setTimeout(()=>finish(new Error('timeout')),7000)})}
+function renderCartPage(){const host=document.querySelector('[data-cart-page]');if(!host)return;const list=host.querySelector('[data-cart-items]'),empty=host.querySelector('[data-cart-empty]'),summary=host.querySelector('[data-cart-summary]'),checkout=host.querySelector('[data-cart-checkout]'),note=host.querySelector('[data-cart-checkout-note]'),booksTotal=host.querySelector('[data-books-total]'),shipText=host.querySelector('[data-shipping-text]');let statuses=null;
+ const draw=()=>{const items=read();empty.hidden=items.length>0;summary.hidden=items.length===0;list.innerHTML=items.map(x=>{const st=statuses&&statuses[String(x.id)]||'';const unavailable=st&&st!=='AVAILABLE';return '<article class="cart-item'+(unavailable?' unavailable':'')+'"><a class="cart-thumb" href="'+escapeHtml(x.url)+'"><img src="'+escapeHtml(x.image)+'" alt=""></a><div class="cart-item-main"><div class="cart-code">BOOK '+escapeHtml(String(x.id).padStart(3,'0'))+'</div><a class="cart-title" href="'+escapeHtml(x.url)+'">'+escapeHtml(x.title)+'</a><div class="cart-item-bottom"><strong>€'+money(x.price)+'</strong><button type="button" data-remove="'+escapeHtml(x.id)+'">Удалить</button></div>'+(unavailable?'<div class="cart-unavailable">Эта книга уже недоступна</div>':'')+'</div></article>'}).join('');
+ const total=items.reduce((s,x)=>s+Number(x.price||0),0);booksTotal.textContent='€'+money(total);
+ if(items.length===1){shipText.textContent='BOX NOW для одной книги — €2';checkout.disabled=false;checkout.textContent='Оформить заказ';checkout.onclick=()=>{location.href='checkout.html?book='+encodeURIComponent(items[0].id)};note.textContent='На следующем шаге выберешь самовывоз или BOX NOW locker.'}
+ else if(items.length>1){shipText.textContent='BOX NOW — стоимость будет рассчитана по размеру общей посылки';checkout.disabled=true;checkout.textContent='Оформить заказ';checkout.onclick=null;note.textContent='Корзина для нескольких книг готова. Подключение единого multi-book заказа — следующий технический шаг.'}
+ list.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>{remove(b.dataset.remove);draw()}));
+ if(statuses&&items.some(x=>statuses[String(x.id)]&&statuses[String(x.id)]!=='AVAILABLE')){checkout.disabled=true;note.textContent='Удали недоступную книгу, чтобы продолжить.'}
+ };
+ draw();
+ loadInventory().then(x=>{if(x&&x.ok){statuses={};(x.books||[]).forEach(b=>statuses[String(b.id)]=String(b.status||'').toUpperCase());draw()}}).catch(()=>{if(note)note.textContent='Не удалось проверить наличие. Обнови страницу через несколько секунд.'});
+ window.addEventListener('otm:cart',draw)
+}
+document.addEventListener('DOMContentLoaded',()=>{bindAddButtons();updateGlobalUi();renderCartPage()});
+window.OTMCart={read,add,remove,clear,has};
+})();
