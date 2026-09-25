@@ -46,7 +46,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 <div class="step">
 <h2>Получение</h2>
 <label class="choice"><input type="radio" name="fulfilment" value="PICKUP_LIMASSOL" checked><span><b>Самовывоз в Лимассоле</b><small>бесплатно · место и время договоримся после резерва</small></span></label>
-<label class="choice"><input type="radio" name="fulfilment" value="DELIVERY_CYPRUS"><span><b>BOX NOW locker по Кипру · €2</b><small>Small · до 8 × 45 × 60 см · выбери удобный locker на карте</small></span></label>
+<label class="choice"><input type="radio" name="fulfilment" value="DELIVERY_CYPRUS"><span><b id="boxNowChoiceTitle">BOX NOW locker по Кипру · €2</b><small id="boxNowChoiceSub">Small · до 8 × 45 × 60 см · выбери удобный locker на карте</small></span></label>
 <div id="boxnowDelivery" class="notice hidden">
   <input id="boxnowLockerId" type="hidden" name="boxnow_locker_id" value="">
   <input id="boxnowLockerAddress" type="hidden" name="boxnow_locker_address" value="">
@@ -222,11 +222,11 @@ function deliveryValidationMessage(){
  return '';
 }
 function money(v){const n=Number(v||0);return Number.isInteger(n)?String(n):n.toFixed(2)}
-function boxNowShipping(count){const n=Math.max(1,Number(count||1));if(n===1)return{tier:'Small',fee:2};if(n<=4)return{tier:'Medium',fee:4};return{tier:'Large',fee:12}}
+function boxNowShipping(count){const n=Math.max(1,Number(count||1));if(n===1)return{tier:'Small',fee:2,note:'Small · до 8 × 45 × 60 см · выбери удобный locker на карте'};if(n<=4)return{tier:'Medium',fee:4,note:'Medium · несколько книг одним заказом · выбери удобный locker на карте'};return{tier:'Large',fee:12,note:'Large · большой заказ · выбери удобный locker на карте'}}
 function updateTotal(){
  if(!books.length)return;
  const booksTotal=books.reduce((s,b)=>s+Number(b.price||0),0);
- const shippingInfo=selectedFulfilment()==='DELIVERY_CYPRUS'?boxNowShipping(books.length):{tier:'PICKUP',fee:0};
+ const boxShipping=boxNowShipping(books.length);\n const shippingInfo=selectedFulfilment()==='DELIVERY_CYPRUS'?boxShipping:{tier:'PICKUP',fee:0};\n $('boxNowChoiceTitle').textContent='BOX NOW locker по Кипру · €'+money(boxShipping.fee);\n $('boxNowChoiceSub').textContent=boxShipping.note;
  const total=booksTotal+shippingInfo.fee;
  $('totalAmount').textContent=money(total);
  $('totalBreakdown').textContent=shippingInfo.fee
@@ -264,7 +264,7 @@ $('reserveForm').addEventListener('submit',e=>{
  const btn=$('reserveBtn');btn.disabled=true;btn.textContent='Создаю резерв…';
 });
 function showPayment(method){
- const amount='€'+book.price;
+ const amount='€'+money(books.reduce((s,b)=>s+Number(b.price||0),0)+(selectedFulfilment()==='DELIVERY_CYPRUS'?boxNowShipping(books.length).fee:0));
  ['payRevolut','payBoc','payCash','digitalConfirm'].forEach(id=>$(id).classList.add('hidden'));
  if(method==='REVOLUT'){$('payRevolut').classList.remove('hidden');$('revAmount').textContent=amount;$('digitalConfirm').classList.remove('hidden')}
  if(method==='BOC_QUICKPAY'){$('payBoc').classList.remove('hidden');$('bocAmount').textContent=amount;$('digitalConfirm').classList.remove('hidden')}
