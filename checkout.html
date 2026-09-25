@@ -37,8 +37,8 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 <h2>Как с тобой связаться</h2>
 <label class="field"><span>Имя *</span><input id="buyerName" name="buyer_name" type="text" autocomplete="name" required minlength="2" maxlength="80" placeholder="Имя"></label>
 <label class="field"><span>Телефон / WhatsApp *</span><input id="buyerPhone" name="buyer_phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="24" placeholder="+357 99 123456"></label>
-<label class="field"><span>Email <small style="font-size:11px">(необязательно)</small></span><input id="buyerEmail" name="buyer_email" type="email" autocomplete="email" maxlength="120" placeholder="name@example.com"></label>
-<div class="hint">Для резерва нужен рабочий номер, по которому можно связаться. Email можно оставить дополнительно. Эти данные используются только для связи по заказу.</div>
+<label class="field"><span>Email *</span><input id="buyerEmail" name="buyer_email" type="email" autocomplete="email" required maxlength="120" placeholder="name@example.com"></label>
+<div class="hint">Телефон и email нужны для связи по заказу и оформления доставки. Эти данные используются только для заказа.</div>
 </div>
 
 <div class="step">
@@ -194,7 +194,8 @@ function contactValidationMessage(){
  const email=$('buyerEmail').value;
  if(!validName(name)) return 'Введи имя — минимум две буквы.';
  if(!validPhone(phone)) return 'Введи рабочий номер телефона / WhatsApp: 8–15 цифр, можно с + и пробелами.';
- if(!validEmail(email)) return 'Проверь формат email или оставь это поле пустым.';
+ if(!email.trim()) return 'Введи email — он нужен для оформления доставки и уведомлений.';
+ if(!validEmail(email)) return 'Проверь формат email.';
  return '';
 }
 function selectedFulfilment(){return document.querySelector('input[name="fulfilment"]:checked')?.value||'PICKUP_LIMASSOL'}
